@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (c) 2022, halal-beef <umer.uddin@mentallysanemainliners.org>
+ * Copyright (c) 2024, halal-beef <umer.uddin@mentallysanemainliners.org>
  */
 
 #ifndef UNIFIEDFLASHINGPLATFORMCOMMANDS_H_ /* Include guard */
