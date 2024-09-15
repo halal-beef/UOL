@@ -10,6 +10,131 @@
 
 #include <UnifiedFlashingPlatformCommands.h>
 
+void ThrowFlashError(int errorCode)
+{
+    char *subMessage;
+
+    switch (errorCode)
+    {
+    case 0x0008:
+        subMessage = "Unsupported protocol / Invalid options";
+        break;
+    case 0x000F:
+        subMessage = "Invalid sub block count";
+        break;
+    case 0x0010:
+        subMessage = "Invalid sub block length";
+        break;
+    case 0x0012:
+        subMessage = "Authentication required";
+        break;
+    case 0x000E:
+        subMessage = "Invalid sub block type";
+        break;
+    case 0x0013:
+        subMessage = "Failed async message";
+        break;
+    case 0x1000:
+        subMessage = "Invalid header type";
+        break;
+    case 0x1001:
+        subMessage = "FFU header contains unknown extra data";
+        break;
+    case 0x0001:
+        subMessage = "Couldn't allocate memory";
+        break;
+    case 0x1106:
+        subMessage = "Security header validation failed";
+        break;
+    case 0x1105:
+        subMessage = "Invalid hash table size";
+        break;
+    case 0x1104:
+        subMessage = "Invalid catalog size";
+        break;
+    case 0x1103:
+        subMessage = "Invalid chunk size";
+        break;
+    case 0x1102:
+        subMessage = "Unsupported algorithm";
+        break;
+    case 0x1101:
+        subMessage = "Invalid struct size";
+        break;
+    case 0x1100:
+        subMessage = "Invalid signature";
+        break;
+    case 0x1202:
+        subMessage = "Invalid struct size";
+        break;
+    case 0x1203:
+        subMessage = "Unsupported algorithm";
+        break;
+    case 0x1204:
+        subMessage = "Invalid chunk size";
+        break;
+    case 0x1005:
+        subMessage = "Data not aligned correctly";
+        break;
+    case 0x0009:
+        subMessage = "Locate protocol failed";
+        break;
+    case 0x1003:
+        subMessage = "Hash mismatch";
+        break;
+    case 0x1006:
+        subMessage = "Couldn't find hash from security header for index";
+        break;
+    case 0x1004:
+        subMessage = "Security header import missing / All FFU headers have not been imported";
+        break;
+    case 0x1304:
+        subMessage = "Invalid platform ID";
+        break;
+    case 0x1307:
+        subMessage = "Invalid write descriptor info";
+        break;
+    case 0x1306:
+        subMessage = "Invalid write descriptor info";
+        break;
+    case 0x1305:
+        subMessage = "Invalid block size";
+        break;
+    case 0x1303:
+        subMessage = "Unsupported FFU version";
+        break;
+    case 0x1302:
+        subMessage = "Unsupported struct version";
+        break;
+    case 0x1301:
+        subMessage = "Invalid update type";
+        break;
+    case 0x100B:
+        subMessage = "Too much payload data, all data has already been written";
+        break;
+    case 0x1008:
+        subMessage = "Internal error";
+        break;
+    case 0x1007:
+        subMessage = "Payload data does not contain all data";
+        break;
+    case 0x0004:
+        subMessage = "Flash write failed";
+        break;
+    case 0x000D:
+        subMessage = "Flash verify failed";
+        break;
+    case 0x0002:
+        subMessage = "Flash read failed";
+        break;
+    default:
+        subMessage = "Unknown Error";
+        break;
+    }
+
+    printf("Fatal error, %s\n", subMessage);
+}
+
 int sendMessage(libusb_device_handle *handle, const char *message)
 {
     int bytesTransferred = 0;
@@ -39,16 +164,20 @@ int receiveMessage(libusb_device_handle *handle, unsigned char *buffer, int leng
     else
     {
         printf("Error receiving message: %s\n", libusb_error_name(result));
+	    return -300; // Lets not conflict with UFP errors lol
     }
 
-        for (int i = 0; i < bytesTransferred; i++)
-    {
-        printf("%02x ", buffer[i]);  // Print each byte as a two-digit hex value
-    }
-    printf("\n");
+    result = (buffer[6] << 8) + buffer[7];
     return result;
 }
-
+void reverse_bytes(uint8_t *data, size_t len) {
+    size_t i;
+    for (i = 0; i < len / 2; i++) {
+        uint8_t temp = data[i];
+        data[i] = data[len - i - 1];
+        data[len - i - 1] = temp;
+    }
+}
 int main() {
     libusb_context *ctx = NULL;
     int result = libusb_init(&ctx);
